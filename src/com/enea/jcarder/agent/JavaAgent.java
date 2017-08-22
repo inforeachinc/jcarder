@@ -40,6 +40,7 @@ import com.enea.jcarder.util.logging.Logger;
  */
 public final class JavaAgent {
     private static final String DUMP_PROPERTY = "jcarder.dump";
+    private static final String VALIDATE_CLASSES_PROPERTY = "jcarder.validate";
     private static final String LOGLEVEL_PROPERTY = "jcarder.loglevel";
     private static final String LOG_FILENAME = "jcarder.log";
     private static final String OUTPUTDIR_PROPERTY = "jcarder.outputdir";
@@ -137,12 +138,17 @@ public final class JavaAgent {
             }
         }
         handleDumpProperty();
+        handleValidateClassesProperty();
         handleLogLevelProperty();
         handleOutputDirProperty();
     }
 
     private void handleDumpProperty() {
         mConfig.setDumpClassFiles(Boolean.getBoolean(DUMP_PROPERTY));
+    }
+
+    private void handleValidateClassesProperty() {
+        mConfig.setValidateTransformedClasses(Boolean.getBoolean(VALIDATE_CLASSES_PROPERTY));
     }
 
     private void handleLogLevelProperty() {

@@ -16,8 +16,6 @@
 
 package com.enea.jcarder.agent.instrument;
 import net.jcip.annotations.NotThreadSafe;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodAdapter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -26,7 +24,7 @@ import org.objectweb.asm.Opcodes;
  * adding a MonitorEnter and MonitorExits.
  */
 @NotThreadSafe
-class LockClassSubstituterAdapter extends MethodAdapter {
+class LockClassSubstituterAdapter extends MethodVisitor {
   private StackAnalyzeMethodVisitor mStack;
   private final InstrumentationContext mContext;
 
@@ -40,13 +38,14 @@ class LockClassSubstituterAdapter extends MethodAdapter {
     "java/util/concurrent/locks/ReentrantReadWriteLock$ReadLock";
 
 
-private static final String TRACING_REENTRANTLOCK_INTERNAL_NAME =
-    "com/enea/jcarder/agent/instrument/TracingReentrantLock";
+//private static final String TRACING_REENTRANTLOCK_INTERNAL_NAME =
+//    "com/enea/jcarder/agent/instrument/TracingReentrantLock";
 
 
-  LockClassSubstituterAdapter(final MethodVisitor visitor,
+  LockClassSubstituterAdapter(final int api,
+                              final MethodVisitor visitor,
                               final InstrumentationContext context) {
-    super(visitor);
+    super(api, visitor);
     mContext = context;
   }
 

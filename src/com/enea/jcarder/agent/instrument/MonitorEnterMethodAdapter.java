@@ -17,7 +17,6 @@
 package com.enea.jcarder.agent.instrument;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.objectweb.asm.MethodAdapter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -26,16 +25,17 @@ import com.enea.jcarder.agent.StaticEventListener;
 import static com.enea.jcarder.agent.instrument.InstrumentationUtilities.getInternalName;
 
 @NotThreadSafe
-class MonitorEnterMethodAdapter extends MethodAdapter {
+class MonitorEnterMethodAdapter extends MethodVisitor {
     private static final String CALLBACK_CLASS_NAME =
         getInternalName(StaticEventListener.class);
     private final InstrumentationContext mContext;
     private StackAnalyzeMethodVisitor mStack;
 
 
-    MonitorEnterMethodAdapter(final MethodVisitor visitor,
+    MonitorEnterMethodAdapter(final int api,
+                              final MethodVisitor visitor,
                               final InstrumentationContext context) {
-        super(visitor);
+        super(api, visitor);
         mContext = context;
     }
 

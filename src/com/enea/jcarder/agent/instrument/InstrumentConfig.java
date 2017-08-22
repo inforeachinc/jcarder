@@ -19,7 +19,7 @@ package com.enea.jcarder.agent.instrument;
 // TODO Is this config class needed?
 public final class InstrumentConfig {
 
-    private final boolean mValidateTransfomedClasses = true;
+    private boolean mValidateTransformedClasses = true;
     private boolean mDumpClassFiles;
 
     public InstrumentConfig() {
@@ -34,7 +34,11 @@ public final class InstrumentConfig {
         return mDumpClassFiles;
     }
 
-    public boolean getValidateTransfomedClasses() {
-        return mValidateTransfomedClasses;
+    public void setValidateTransformedClasses(boolean validateTransformedClasses) {
+        mValidateTransformedClasses = validateTransformedClasses;
+    }
+
+    public boolean getValidateTransformedClasses() {
+        return mValidateTransformedClasses;
     }
 }

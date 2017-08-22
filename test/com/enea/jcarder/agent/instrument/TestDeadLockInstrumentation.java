@@ -76,7 +76,7 @@ public final class TestDeadLockInstrumentation implements EventListenerIfc {
                                  new InstrumentConfig());
         mClassLoader = new TransformClassLoader(classTransformer);
         StaticEventListener.setListener(this);
-        mEnteredMonitors = new ArrayList<MonitorWithContext>();
+        mEnteredMonitors = new ArrayList<>();
     }
 
     private SynchronizationTestIfc transformAsSynchronizationTest(Class clazz)

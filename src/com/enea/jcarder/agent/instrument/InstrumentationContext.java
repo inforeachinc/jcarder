@@ -16,17 +16,18 @@
 package com.enea.jcarder.agent.instrument;
 
 import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodAdapter;
 import org.objectweb.asm.MethodVisitor;
 
 
 class InstrumentationContext {
-    private String mClassName;
+    private final int mApi;
+    private final String mClassName;
     private String mMethodName = "<unknown>";
     private String mSourceFile = "<unknown>";
     private int mLineNumber = -1;
 
-    public InstrumentationContext(String className) {
+    public InstrumentationContext(int api, String className) {
+        mApi = api;
         mClassName = className;
     }
 
@@ -78,13 +79,13 @@ class InstrumentationContext {
     }
 
 
-    public MethodAdapter getLineNumberWatcherAdapter(MethodVisitor mv) {
+    public MethodVisitor getLineNumberWatcherAdapter(MethodVisitor mv) {
         return new LineNumberMethodAdapter(mv);
     }
 
-    private class LineNumberMethodAdapter extends MethodAdapter {
+    private class LineNumberMethodAdapter extends MethodVisitor {
         public LineNumberMethodAdapter(MethodVisitor mv) {
-            super(mv);
+            super(mApi, mv);
         }
 
         @Override

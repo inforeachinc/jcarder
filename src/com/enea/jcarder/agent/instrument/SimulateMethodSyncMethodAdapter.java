@@ -18,25 +18,29 @@ package com.enea.jcarder.agent.instrument;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodAdapter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.commons.AdviceAdapter;
 
 /**
  * This Method Adapter simulates a synchronized declaration on a method by
  * adding a MonitorEnter and MonitorExits.
  */
 @NotThreadSafe
-class SimulateMethodSyncMethodAdapter extends MethodAdapter {
+class SimulateMethodSyncMethodAdapter extends AdviceAdapter {
     private final InstrumentationContext mContext;
     private final boolean mIsStatic;
     private final Label mTryLabel = new Label();
     private final Label mFinallyLabel = new Label();
 
-    SimulateMethodSyncMethodAdapter(final MethodVisitor visitor,
+    SimulateMethodSyncMethodAdapter(final int api,
+                                    final MethodVisitor visitor,
+                                    final int acc,
+                                    final String name,
+                                    final String desc,
                                     final InstrumentationContext context,
                                     final boolean isStatic) {
-        super(visitor);
+        super(api, visitor, acc, name, desc);
         mContext = context;
         mIsStatic = isStatic;
     }
@@ -62,36 +66,22 @@ class SimulateMethodSyncMethodAdapter extends MethodAdapter {
      * This method is called just after the last code in the method.
      */
     public void visitMaxs(int arg0, int arg1) {
-        /*
-         * This finally block is needed in order to exit the monitor even when
-         * the method exits by throwing an exception.
-         */
-        mv.visitLabel(mFinallyLabel);
-        putMonitorObjectReferenceOnStack();
-        mv.visitInsn(Opcodes.MONITOREXIT);
-        mv.visitInsn(Opcodes.ATHROW);
         mv.visitTryCatchBlock(mTryLabel,
                               mFinallyLabel,
                               mFinallyLabel,
                               null);
+        mv.visitLabel(mFinallyLabel);
+        onFinally();
+        mv.visitInsn(Opcodes.ATHROW);
+
         super.visitMaxs(arg0, arg1);
     }
 
-    public void visitInsn(int inst) {
-        switch (inst) {
-        case Opcodes.IRETURN:
-        case Opcodes.LRETURN:
-        case Opcodes.FRETURN:
-        case Opcodes.DRETURN:
-        case Opcodes.ARETURN:
-        case Opcodes.RETURN:
-            putMonitorObjectReferenceOnStack();
-            mv.visitInsn(Opcodes.MONITOREXIT);
-            break;
-        default:
-            // Do nothing.
-        }
-        super.visitInsn(inst);
+    @Override
+    protected void onMethodExit(int opcode)
+    {
+        if(opcode != Opcodes.ATHROW)
+            onFinally();
     }
 
     private void putMonitorObjectReferenceOnStack() {
@@ -100,5 +90,14 @@ class SimulateMethodSyncMethodAdapter extends MethodAdapter {
         } else {
             mv.visitVarInsn(Opcodes.ALOAD, 0);
         }
+    }
+
+    private void onFinally() {
+    /*
+     * This finally block is needed in order to exit the monitor even when
+     * the method exits by throwing an exception.
+     */
+        putMonitorObjectReferenceOnStack();
+        mv.visitInsn(Opcodes.MONITOREXIT);
     }
 }

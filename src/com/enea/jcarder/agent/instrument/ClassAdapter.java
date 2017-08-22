@@ -31,17 +31,19 @@ import com.enea.jcarder.util.logging.Logger;
  * the MonitorMethodAdapter for instrumenting each method in the class.
  */
 @NotThreadSafe
-class ClassAdapter extends org.objectweb.asm.ClassAdapter {
+class ClassAdapter extends org.objectweb.asm.ClassVisitor {
     private final InstrumentationContext mContext;
 
-    private String mSourceFile = "<unknown>";
+//    private String mSourceFile = "<unknown>";
+    private final int mApi;
     private final Logger mLogger;
 
-    ClassAdapter(Logger logger, ClassVisitor visitor, String className) {
-        super(visitor);
+    ClassAdapter(int api, Logger logger, ClassVisitor visitor, String className) {
+        super(api, visitor);
+        mApi = api;
         mLogger = logger;
 
-        mContext = new InstrumentationContext(className);
+        mContext = new InstrumentationContext(api, className);
         mLogger.fine("Instrumenting class " + className);
     }
 
@@ -84,12 +86,12 @@ class ClassAdapter extends org.objectweb.asm.ClassAdapter {
                                                        signature,
                                                        exceptions);
             final MonitorEnterMethodAdapter dlma =
-                new MonitorEnterMethodAdapter(mv, mContext);
+                new MonitorEnterMethodAdapter(mApi, mv, mContext);
             final LockClassSubstituterAdapter lcsa =
-              new LockClassSubstituterAdapter(dlma, mContext);
+              new LockClassSubstituterAdapter(mApi, dlma, mContext);
 
             final StackAnalyzeMethodVisitor stackAnalyzer =
-                new StackAnalyzeMethodVisitor(mLogger, lcsa, isStatic);
+                new StackAnalyzeMethodVisitor(mApi, mLogger, lcsa, isStatic);
             dlma.setStackAnalyzer(stackAnalyzer);
             lcsa.setStackAnalyzer(stackAnalyzer);
 
@@ -107,7 +109,11 @@ class ClassAdapter extends org.objectweb.asm.ClassAdapter {
                  * beginning of the method and at each possible exit (by normal
                  * return and by exception) of the method.
                  */
-                return new SimulateMethodSyncMethodAdapter(lineNumberWatcher,
+                return new SimulateMethodSyncMethodAdapter(mApi,
+                                                           lineNumberWatcher,
+                                                           arg,
+                                                           methodName,
+                                                           descriptor,
                                                            mContext,
                                                            isStatic);
             } else {
