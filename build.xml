@@ -87,8 +87,8 @@
       <fileset file="${src}/build.properties"/>
       <zipfileset src="${jcip.jar}"/>
       <zipfileset src="${asm.jar}"/>
-      <rule pattern="org.objectweb.**"
-            result="com.enea.jcarder.org.objectweb.@1"/>
+      <!--rule pattern="org.objectweb.**"
+            result="com.enea.jcarder.org.objectweb.@1"/-->
     </jarjar>
     <jar destfile="${dist}/examples.jar" basedir="${examples}"/>
     <tar destfile="${dist}/jcarder-${version}.tar.gz" compression="gzip">
