@@ -55,7 +55,7 @@ public final class MonitorWithContext {
                                               int lineNumber) {
         MonitorWithContext context =
             new MonitorWithContext(monitor,
-                baseClass.getName() + "." + methodShortName+ "() " +
+                baseClass.getName() + "." + methodShortName+ " " +
                     "(" + baseClass.getSimpleName() + ".java:" + lineNumber + ")",
                 lockReference,
                 Thread.currentThread());

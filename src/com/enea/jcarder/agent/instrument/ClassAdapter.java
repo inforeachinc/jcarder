@@ -17,15 +17,15 @@
 package com.enea.jcarder.agent.instrument;
 
 import org.objectweb.asm.Opcodes;
-import static org.objectweb.asm.Opcodes.ACC_NATIVE;
-import static org.objectweb.asm.Opcodes.ACC_STATIC;
-import static org.objectweb.asm.Opcodes.ACC_SYNCHRONIZED;
+import org.objectweb.asm.commons.TryCatchBlockSorter;
 import net.jcip.annotations.NotThreadSafe;
 
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 
 import com.enea.jcarder.util.logging.Logger;
+
+import static org.objectweb.asm.Opcodes.*;
 
 /**
  * Each instance of this class is responsible for instrumenting a class. It uses
@@ -35,14 +35,13 @@ import com.enea.jcarder.util.logging.Logger;
 class ClassAdapter extends ClassVisitor {
     private final InstrumentationContext mContext;
 
-    private String mSourceFile = "<unknown>";
     private final Logger mLogger;
 
-    ClassAdapter(Logger logger, ClassVisitor visitor, String className) {
+    ClassAdapter(Logger logger, ClassVisitor visitor, String className, int version) {
         super(Opcodes.ASM5, visitor);
         mLogger = logger;
 
-        mContext = new InstrumentationContext(className);
+        mContext = new InstrumentationContext(className, version);
         mLogger.fine("Instrumenting class " + className);
     }
 
@@ -78,7 +77,8 @@ class ClassAdapter extends ClassVisitor {
                                      signature,
                                      exceptions);
         } else {
-            mContext.setMethodName(methodName);
+            mContext.setMethodName(methodName + ":" + descriptor);
+            mContext.setLineNumber(-1);
 
             final MethodVisitor mv = super.visitMethod(manipulatedArg,
                                                        methodName,
@@ -109,7 +109,10 @@ class ClassAdapter extends ClassVisitor {
                  * beginning of the method and at each possible exit (by normal
                  * return and by exception) of the method.
                  */
-                return new SimulateMethodSyncMethodAdapter(lineNumberWatcher,
+                mLogger.fine("Instrumenting synchronized method "
+                        + mContext.getClassName() + "." + methodName);
+                TryCatchBlockSorter tryCatchBlockSorter = new TryCatchBlockSorter(lineNumberWatcher, access, methodName, descriptor, signature, exceptions);
+                return new SimulateMethodSyncMethodAdapter(tryCatchBlockSorter,
                                                            mContext,
                                                            isStatic);
             } else {

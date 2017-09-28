@@ -47,7 +47,8 @@ class MonitorEnterMethodAdapter extends MethodVisitor {
             mv.visitMethodInsn(Opcodes.INVOKESTATIC,
                                CALLBACK_CLASS_NAME,
                                "beforeMonitorEnter",
-                   "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V");
+                   "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V",
+                   false);
         } else if (inst == Opcodes.MONITOREXIT) {
             mv.visitInsn(Opcodes.DUP);
             mv.visitLdcInsn(mContext.convertFromJvmInternalNames(mStack.peek()));
@@ -55,7 +56,8 @@ class MonitorEnterMethodAdapter extends MethodVisitor {
             mv.visitMethodInsn(Opcodes.INVOKESTATIC,
                                CALLBACK_CLASS_NAME,
                                "beforeMonitorExit",
-                   "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V");
+                   "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V",
+                   false);
         }
 
         super.visitInsn(inst);

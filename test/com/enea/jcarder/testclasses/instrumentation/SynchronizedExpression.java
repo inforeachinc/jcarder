@@ -38,7 +38,7 @@ public final class SynchronizedExpression implements SynchronizationTestIfc {
 
     public MonitorWithContext[] getExpectedMonitorEnterings() {
         return MonitorWithContext.create(mSync,
-                                         getClass(), "go",
+                                         getClass(), "go:()V",
                                          "???",
                                          33);
     }

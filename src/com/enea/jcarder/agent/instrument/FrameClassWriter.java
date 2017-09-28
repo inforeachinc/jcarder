@@ -33,7 +33,7 @@ public class FrameClassWriter extends ClassWriter {
     private final ClassInfoCache ciCache;
 
     public FrameClassWriter(ClassLoader loader, ClassInfoCache ciCache, int classVersion) {
-        super(classVersion > V1_6 ? COMPUTE_FRAMES : COMPUTE_MAXS);
+        super(classVersion > V1_6 ? (COMPUTE_FRAMES | COMPUTE_MAXS) : COMPUTE_MAXS);
         this.loader = loader;
         this.ciCache = ciCache;
     }

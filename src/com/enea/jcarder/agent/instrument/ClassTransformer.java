@@ -25,7 +25,6 @@ import java.security.ProtectionDomain;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.util.CheckClassAdapter;
 
 import com.enea.jcarder.util.logging.Logger;
@@ -109,26 +108,35 @@ public class ClassTransformer implements ClassFileTransformer {
                            + " loaded with " + getClassLoaderName(classLoader));
             return null;
         }
+        int version = extractClassFileMajorVersion(originalClassBuffer);
+        if (mInstrumentConfig.getDumpClassFiles()) {
+            mLogger.finer("==> dumping " + className + " major=" + version + " to " + mOriginalClassesDir);
+            dumpClassToFile(originalClassBuffer,
+                            mOriginalClassesDir,
+                            className);
+        }
         final ClassReader reader = new ClassReader(originalClassBuffer);
-        final ClassWriter writer = new FrameClassWriter(classLoader, ciCache, Opcodes.V1_8);
+        final ClassWriter writer = new FrameClassWriter(classLoader, ciCache, version);
 
         ClassVisitor visitor = writer;
         if (mInstrumentConfig.getValidateTransfomedClasses()) {
             visitor = new CheckClassAdapter(visitor, false);
         }
-        visitor = new ClassAdapter(mLogger, visitor, className);
+        visitor = new ClassAdapter(mLogger, visitor, className, version);
         reader.accept(visitor, ClassReader.EXPAND_FRAMES);
         byte[] instrumentedClassfileBuffer = writer.toByteArray();
         if (mInstrumentConfig.getDumpClassFiles()) {
-            mLogger.severe("==> dumping class files to " + mOriginalClassesDir);
-            dumpClassToFile(originalClassBuffer,
-                            mOriginalClassesDir,
-                            className);
+            mLogger.finer("==> dumping " + className + " major=" + extractClassFileMajorVersion(instrumentedClassfileBuffer) + " to " + mInstrumentedClassesDir);
             dumpClassToFile(instrumentedClassfileBuffer,
                             mInstrumentedClassesDir,
                             className);
         }
         return instrumentedClassfileBuffer;
+    }
+
+    private int extractClassFileMajorVersion(byte[] classByffer)
+    {
+        return ((classByffer[6] & 0xff) << 8) | ((classByffer[7] & 0xff) << 0);
     }
 
     /**
@@ -212,13 +220,20 @@ public class ClassTransformer implements ClassFileTransformer {
                                  String className) {
         try {
             String separator = System.getProperty("file.separator");
+            String classNameModified = className.replace(".", separator);
             File file = new File(baseDir + separator
-                                 + className.replace(".", separator)
+                                 + classNameModified
                                  + ".class");
+            for (long c = 0; file.exists(); c += 1) {
+                file = new File(baseDir + separator
+                                + classNameModified
+                                + "$$$" + c
+                                + ".class");
+            }
             file.getParentFile().mkdirs();
-            FileOutputStream fos = new FileOutputStream(file);
-            fos.write(content);
-            fos.close();
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                fos.write(content);
+            }
         } catch (IOException e) {
             mLogger.severe("Failed to dump class to file: " + e.getMessage());
         }

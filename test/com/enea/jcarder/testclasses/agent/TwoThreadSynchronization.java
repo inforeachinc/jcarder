@@ -67,14 +67,14 @@ implements SynchronizationTestIfc {
         final Lock lockSync2 = new Lock(mSync2);
         final String threadName = Thread.currentThread().getName();
         return new LockEvent[] {
-            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync0, getClass(), "go", "mSync0", 35, threadName),
-            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync1, getClass(), "go", "mSync1", 37, threadName),
-            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync2, getClass(), "run", "mSync2", 54, getName()),
-            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync1, getClass(), "run", "mSync1", 56, getName()),
-            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync1, getClass(), "go", "mSync1", 42, threadName),
-            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync1, getClass(), "run", "mSync1", 58, getName()),
-            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync2, getClass(), "run", "mSync2", 59, getName()),
-            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync0, getClass(), "go", "mSync0", 45, threadName)
+            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync0, getClass(), "go:()V", "mSync0", 35, threadName),
+            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync1, getClass(), "go:()V", "mSync1", 37, threadName),
+            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync2, getClass(), "run:()V", "mSync2", 54, getName()),
+            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync1, getClass(), "run:()V", "mSync1", 56, getName()),
+            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync1, getClass(), "go:()V", "mSync1", 42, threadName),
+            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync1, getClass(), "run:()V", "mSync1", 58, getName()),
+            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync2, getClass(), "run:()V", "mSync2", 59, getName()),
+            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync0, getClass(), "go:()V", "mSync0", 45, threadName)
         };
     }
 }

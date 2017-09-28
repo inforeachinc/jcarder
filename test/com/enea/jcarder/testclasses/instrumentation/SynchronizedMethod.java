@@ -36,8 +36,8 @@ public final class SynchronizedMethod implements SynchronizationTestIfc {
 
     public MonitorWithContext[] getExpectedMonitorEnterings() {
         return MonitorWithContext.create(this,
-                                         getClass(), "help",
-                                         "this", 30);
+                                         getClass(), "help:()V",
+                                         "this", -1);
     }
 
 }

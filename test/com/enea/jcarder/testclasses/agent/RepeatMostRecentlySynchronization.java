@@ -47,12 +47,12 @@ implements SynchronizationTestIfc {
         final Lock lockSync0 = new Lock(mSync0);
         final Lock lockSync1 = new Lock(mSync1);
         return new LockEvent[] {
-            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync0, getClass(), "go", "mSync0", 32),
-            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync1, getClass(), "go", "mSync1", 34),
-            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync1, getClass(), "go", "mSync1", 39),
-            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync1, getClass(), "go", "mSync1", 41),
-            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync1, getClass(), "go", "mSync1", 42),
-            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync0, getClass(), "go", "mSync0", 43)
+            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync0, getClass(), "go:()V", "mSync0", 32),
+            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync1, getClass(), "go:()V", "mSync1", 34),
+            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync1, getClass(), "go:()V", "mSync1", 39),
+            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync1, getClass(), "go:()V", "mSync1", 41),
+            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync1, getClass(), "go:()V", "mSync1", 42),
+            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync0, getClass(), "go:()V", "mSync0", 43)
         };
     }
 

@@ -104,14 +104,14 @@ implements SynchronizationTestIfc {
         final Lock lockSync1 = new Lock(mSync1);
         final Lock lockSync2 = new Lock(mSync2);
         return new LockEvent[] {
-            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync0, getClass(), "go", "mSync0", 34),
-            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync1, getClass(), "go", "mSync1", 37),
-            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync2, getClass(), "go", "mSync2", 40),
-            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync2, getClass(), "go", "mSync2", 42),
-            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync1, getClass(), "go", "mSync1", 43),
-            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync2, getClass(), "go", "mSync2", 55),
-            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync2, getClass(), "go", "mSync2", 57),
-            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync0, getClass(), "go", "mSync0", 58)
+            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync0, getClass(), "go:()V", "mSync0", 34),
+            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync1, getClass(), "go:()V", "mSync1", 37),
+            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync2, getClass(), "go:()V", "mSync2", 40),
+            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync2, getClass(), "go:()V", "mSync2", 42),
+            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync1, getClass(), "go:()V", "mSync1", 43),
+            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync2, getClass(), "go:()V", "mSync2", 55),
+            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync2, getClass(), "go:()V", "mSync2", 57),
+            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync0, getClass(), "go:()V", "mSync0", 58)
         };
     }
 }

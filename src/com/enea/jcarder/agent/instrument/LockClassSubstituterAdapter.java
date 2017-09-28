@@ -15,8 +15,8 @@
  */
 
 package com.enea.jcarder.agent.instrument;
+
 import net.jcip.annotations.NotThreadSafe;
-import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -81,13 +81,13 @@ private static final String TRACING_REENTRANTLOCK_INTERNAL_NAME =
         mv.visitMethodInsn(
           Opcodes.INVOKESTATIC,
           "com/enea/jcarder/agent/LockTracer",
-          name, traceCallSpec);
+          name, traceCallSpec, false);
         return;
       } else {
         System.err.println("Didn't know how to instrument call to " +
                            owner + "." + name + desc);
       }
     }
-    mv.visitMethodInsn(opcode, owner, name, desc);
+    mv.visitMethodInsn(opcode, owner, name, desc, ifc);
   }
 }

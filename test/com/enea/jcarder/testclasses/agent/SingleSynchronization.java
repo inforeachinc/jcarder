@@ -45,10 +45,10 @@ public final class SingleSynchronization implements SynchronizationTestIfc {
         final Lock lockSync0 = new Lock(mSync0);
         final Lock lockSync1 = new Lock(mSync1);
         return new LockEvent[] {
-            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync0, getClass(), "go", "mSync0", 34),
-            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync0, getClass(), "go", "mSync0", 36),
-            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync1, getClass(), "go", "mSync1", 38),
-            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync1, getClass(), "go", "mSync1", 40),
+            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync0, getClass(), "go:()V", "mSync0", 34),
+            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync0, getClass(), "go:()V", "mSync0", 36),
+            LockEvent.create(LockEventType.MONITOR_ENTER, lockSync1, getClass(), "go:()V", "mSync1", 38),
+            LockEvent.create(LockEventType.MONITOR_EXIT, lockSync1, getClass(), "go:()V", "mSync1", 40),
         };
     }
 }

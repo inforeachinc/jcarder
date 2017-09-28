@@ -24,7 +24,7 @@ public class ReentrantLockSynchronization implements SynchronizationTestIfc {
 
     public MonitorWithContext[] getExpectedMonitorEnterings() {
         return MonitorWithContext.create(LockTracer.getSyncObject(lock),
-                                         getClass(), "go",
+                                         getClass(), "go:()V",
                                          getClass().getName() + ".lock",
                                          17);
     }

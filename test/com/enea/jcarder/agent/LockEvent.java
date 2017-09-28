@@ -54,7 +54,7 @@ public final class LockEvent {
                                    final String threadName) {
         LockingContext context = new LockingContext(threadName,
             baseClass.getName() + "." + lockReferenceShortName,
-            baseClass.getName() + "." + methodShortName+ "() " +
+            baseClass.getName() + "." + methodShortName+ " " +
                 "(" + baseClass.getSimpleName() + ".java:" + lineNumber + ")");
         return new LockEvent(type, lock, context);
     }

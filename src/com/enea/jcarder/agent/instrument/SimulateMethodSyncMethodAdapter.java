@@ -20,7 +20,6 @@ import net.jcip.annotations.NotThreadSafe;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.commons.AdviceAdapter;
 
 /**
  * This Method Adapter simulates a synchronized declaration on a method by
@@ -32,7 +31,6 @@ class SimulateMethodSyncMethodAdapter extends MethodVisitor {
     private final boolean mIsStatic;
     private final Label mTryLabel = new Label();
     private final Label mFinallyLabel = new Label();
-    private boolean mAddedTryCatch = false;
 
     SimulateMethodSyncMethodAdapter(final MethodVisitor visitor,
                                     final InstrumentationContext context,
@@ -40,6 +38,28 @@ class SimulateMethodSyncMethodAdapter extends MethodVisitor {
         super(Opcodes.ASM5, visitor);
         mContext = context;
         mIsStatic = isStatic;
+    }
+
+    @Override
+    public void visitCode() {
+        super.visitCode();
+        mv.visitTryCatchBlock(mTryLabel,
+                              mFinallyLabel,
+                              mFinallyLabel,
+                              null);
+        /*
+         * This MethodAdapter will only be applied to synchronized methods, and
+         * constructors are not allowed to be declared synchronized. Therefore
+         * we can add instructions at the beginning of the method and do not
+         * have to find the place after the initial constructor byte codes:
+         *
+         *     ALOAD 0 : this
+         *     INVOKESPECIAL Object.<init>() : void
+         *
+         */
+        putMonitorObjectReferenceOnStack();
+        mv.visitInsn(Opcodes.MONITORENTER);
+        mv.visitLabel(mTryLabel);
     }
 
     /**
@@ -56,32 +76,6 @@ class SimulateMethodSyncMethodAdapter extends MethodVisitor {
         mv.visitInsn(Opcodes.MONITOREXIT);
         mv.visitInsn(Opcodes.ATHROW);
         super.visitMaxs(arg0, arg1);
-    }
-
-    @Override
-    public void visitLabel(Label l) {
-        if (!mAddedTryCatch) {
-          mv.visitTryCatchBlock(mTryLabel,
-                                mFinallyLabel,
-                                mFinallyLabel,
-                                null);
-          /*
-           * This MethodAdapter will only be applied to synchronized methods, and
-           * constructors are not allowed to be declared synchronized. Therefore
-           * we can add instructions at the beginning of the method and do not
-           * have to find the place after the initial constructor byte codes:
-           *
-           *     ALOAD 0 : this
-           *     INVOKESPECIAL Object.<init>() : void
-           *
-           */
-          putMonitorObjectReferenceOnStack();
-          mv.visitInsn(Opcodes.MONITORENTER);
-          mv.visitLabel(mTryLabel);
-          mAddedTryCatch = true;
-        }
-
-      super.visitLabel(l);
     }
 
     @Override
@@ -104,7 +98,7 @@ class SimulateMethodSyncMethodAdapter extends MethodVisitor {
 
     private void putMonitorObjectReferenceOnStack() {
         if (mIsStatic) {
-            InstrumentationUtilities.pushClassReferenceToStack(mv, mContext.getClassName());
+            InstrumentationUtilities.pushClassReferenceToStack(mv, mContext.getClassName(), mContext.getVersion());
         } else {
             mv.visitVarInsn(Opcodes.ALOAD, 0);
         }

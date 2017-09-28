@@ -22,12 +22,14 @@ import org.objectweb.asm.MethodVisitor;
 
 class InstrumentationContext {
     private String mClassName;
+    private int mVersion;
     private String mMethodName = "<unknown>";
     private String mSourceFile = "<unknown>";
     private int mLineNumber = -1;
 
-    public InstrumentationContext(String className) {
+    public InstrumentationContext(String className, int version) {
         mClassName = className;
+        mVersion = version;
     }
 
     public void setSourceFile(String sourceFile) {
@@ -40,6 +42,10 @@ class InstrumentationContext {
 
     public String getClassName() {
         return mClassName;
+    }
+
+    public int getVersion() {
+        return mVersion;
     }
 
     public void setMethodName(String name) {
@@ -59,8 +65,8 @@ class InstrumentationContext {
     }
 
     public String getCallContextString() {
-        return mClassName + "." + mMethodName + "() (" +
-            mSourceFile + ":" + mLineNumber + ")";
+        return getClassName() + "." + getMethodName() + " (" +
+            getSourceFile() + ":" + getLineNumber() + ")";
     }
 
     public String convertFromJvmInternalNames(String s) {
@@ -89,7 +95,7 @@ class InstrumentationContext {
 
         @Override
         public void visitLineNumber(int line, Label start) {
-            mLineNumber = line;
+            setLineNumber(line);
             super.visitLineNumber(line, start);
         }
 
