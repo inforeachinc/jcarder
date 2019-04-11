@@ -62,13 +62,21 @@ implements ContextWriterIfc {
     }
 
     private void writeBuffer() throws IOException {
-        mBuffer.flip();
-        mChannel.write(mBuffer);
-        while (mBuffer.hasRemaining()) {
-            Thread.yield();
+        try {
+            mBuffer.flip();
             mChannel.write(mBuffer);
+            while (mBuffer.hasRemaining()) {
+                Thread.yield();
+                mChannel.write(mBuffer);
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            // workaround for ArrayIndexOutOfBoundsException: -1 exception thrown from sun.nio.ch.NativeThreadSet.remove(NativeThreadSet.java:76)
+            if (!mShutdownHookExecuted)
+                throw e;
         }
-        mBuffer.clear();
+        finally {
+            mBuffer.clear();
+        }
     }
 
     private void writeHeader() throws IOException {
