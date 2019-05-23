@@ -75,13 +75,20 @@ public final class EventFileWriter implements LockEventListenerIfc {
     }
 
     private void writeBuffer() throws IOException {
-        mBuffer.flip();
-        mFileChannel.write(mBuffer);
-        while (mBuffer.hasRemaining()) {
-            Thread.yield();
+        try {
+            mBuffer.flip();
             mFileChannel.write(mBuffer);
+            while (mBuffer.hasRemaining()) {
+                Thread.yield();
+                mFileChannel.write(mBuffer);
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            // workaround for ArrayIndexOutOfBoundsException: -1 exception thrown from sun.nio.ch.NativeThreadSet.remove(NativeThreadSet.java:76)
+            if (!mShutdownHookExecuted)
+                throw e;
+        } finally {
+            mBuffer.clear();
         }
-        mBuffer.clear();
     }
 
     public synchronized void close() throws IOException {
