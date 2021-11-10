@@ -17,8 +17,12 @@
 package com.enea.jcarder.agent.instrument;
 
 import net.jcip.annotations.NotThreadSafe;
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+
+import java.util.Arrays;
 
 /**
  * This Method Adapter simulates a synchronized declaration on a method by
@@ -39,8 +43,12 @@ class LockClassSubstituterAdapter extends MethodVisitor {
     "java/util/concurrent/locks/ReentrantReadWriteLock$ReadLock";
 
 
-private static final String TRACING_REENTRANTLOCK_INTERNAL_NAME =
+  private static final String TRACING_REENTRANTLOCK_INTERNAL_NAME =
     "com/enea/jcarder/agent/instrument/TracingReentrantLock";
+  private static final String LOCK_TRACER_INTERNAL_NAME =
+    "com/enea/jcarder/agent/LockTracer";
+  private static final String LOCK_TRACER_ARGUMENTS_DESCRIPTOR = 
+    "(Ljava/util/concurrent/locks/Lock;Ljava/lang/String;Ljava/lang/String;)";     
 
 
   LockClassSubstituterAdapter(final MethodVisitor visitor,
@@ -54,6 +62,46 @@ private static final String TRACING_REENTRANTLOCK_INTERNAL_NAME =
   }
 
   @Override
+  public void visitInvokeDynamicInsn(String name, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments)
+  {
+    if (bootstrapMethodHandle.getTag() == Opcodes.H_INVOKESTATIC &&
+        "java/lang/invoke/LambdaMetafactory".equals(bootstrapMethodHandle.getOwner()) &&
+        "metafactory".equals(bootstrapMethodHandle.getName())) {
+      
+      for (int i = 0; i < bootstrapMethodArguments.length; i++) {
+        
+        if (bootstrapMethodArguments[i] instanceof Handle) {
+          Handle handle = (Handle) bootstrapMethodArguments[i];
+          if ((handle.getTag() == Opcodes.H_INVOKEVIRTUAL ||
+               handle.getTag() == Opcodes.H_INVOKEINTERFACE) &&
+              (REENTRANTLOCK_INTERNAL_NAME.equals(handle.getOwner()) ||
+               LOCK_INTERNAL_NAME.equals(handle.getOwner()) ||
+               RWLOCK_WLOCK_INTERNAL_NAME.equals(handle.getOwner()) ||
+               RWLOCK_RLOCK_INTERNAL_NAME.equals(handle.getOwner()))) {
+
+            String traceCallSpec = getTraceCallSpec(handle.getName());
+
+            if (traceCallSpec != null) {
+              mv.visitLdcInsn(mContext.convertFromJvmInternalNames(mStack.peek()));
+              mv.visitLdcInsn(mContext.getCallContextString());
+
+              Object[] bootstrapMethodArgumentsCopy = Arrays.copyOf(bootstrapMethodArguments, bootstrapMethodArguments.length);
+              bootstrapMethodArgumentsCopy[i] = new Handle(Opcodes.H_INVOKESTATIC, LOCK_TRACER_INTERNAL_NAME, handle.getName(), traceCallSpec, handle.isInterface());
+              String invokeDynamicDescriptor = LOCK_TRACER_ARGUMENTS_DESCRIPTOR + Type.getReturnType(descriptor).getDescriptor();
+
+              mv.visitInvokeDynamicInsn(name, invokeDynamicDescriptor, bootstrapMethodHandle, bootstrapMethodArgumentsCopy);
+              
+              return;
+            }
+          }
+        }
+      }
+    }
+    
+    mv.visitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
+  }
+  
+  @Override
   public void visitMethodInsn(int opcode,
                               String owner, String name, String desc, boolean ifc) {
     if ((opcode == Opcodes.INVOKEVIRTUAL ||
@@ -63,16 +111,7 @@ private static final String TRACING_REENTRANTLOCK_INTERNAL_NAME =
          RWLOCK_WLOCK_INTERNAL_NAME.equals(owner) ||
          RWLOCK_RLOCK_INTERNAL_NAME.equals(owner))) {
 
-      String traceCallSpec = null;
-
-      if ("lock".equals(name) ||
-          "unlock".equals(name) ||
-          "lockInterruptibly".equals(name)) {
-
-        traceCallSpec = "(Ljava/util/concurrent/locks/Lock;Ljava/lang/String;Ljava/lang/String;)V";
-      } else if ("tryLock".equals(name)) {
-        traceCallSpec = "(Ljava/util/concurrent/locks/Lock;Ljava/lang/String;Ljava/lang/String;)Z";
-      }
+      String traceCallSpec = getTraceCallSpec(name);
 
       if (traceCallSpec != null) {
         mv.visitLdcInsn(mContext.convertFromJvmInternalNames(mStack.peek()));
@@ -80,7 +119,7 @@ private static final String TRACING_REENTRANTLOCK_INTERNAL_NAME =
 
         mv.visitMethodInsn(
           Opcodes.INVOKESTATIC,
-          "com/enea/jcarder/agent/LockTracer",
+          LOCK_TRACER_INTERNAL_NAME,
           name, traceCallSpec, false);
         return;
       } else {
@@ -89,5 +128,20 @@ private static final String TRACING_REENTRANTLOCK_INTERNAL_NAME =
       }
     }
     mv.visitMethodInsn(opcode, owner, name, desc, ifc);
+  }
+
+  private static String getTraceCallSpec(String name)
+  {
+    String traceCallSpec = null;
+
+    if ("lock".equals(name) ||
+        "unlock".equals(name) ||
+        "lockInterruptibly".equals(name)) {
+
+      traceCallSpec = LOCK_TRACER_ARGUMENTS_DESCRIPTOR + "V";
+    } else if ("tryLock".equals(name)) {
+      traceCallSpec = LOCK_TRACER_ARGUMENTS_DESCRIPTOR + "Z";
+    }
+    return traceCallSpec;
   }
 }

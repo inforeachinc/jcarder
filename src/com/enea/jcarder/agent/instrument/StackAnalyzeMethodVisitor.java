@@ -151,6 +151,9 @@ class StackAnalyzeMethodVisitor extends MethodVisitor {
         case Opcodes.DUP:
             pushTextualDescription(peek());
             break;
+        case Opcodes.POP:
+            popObject();
+            break;
         default:
             clear();
         }
@@ -236,13 +239,19 @@ class StackAnalyzeMethodVisitor extends MethodVisitor {
         case Opcodes.INVOKEINTERFACE:
             String thisObject = "<unknown>";
             if (opCode == Opcodes.INVOKEVIRTUAL ||
-                opCode == Opcodes.INVOKEINTERFACE) {
+                opCode == Opcodes.INVOKEINTERFACE ||
+               (opCode == Opcodes.INVOKESPECIAL) && !"<init>".equals(name)) {
                 for (int i = 0; i < InstrumentationUtilities.countParameters(desc); i++) {
                     popObject();
                 }
                 thisObject = popObject().toString();
+            } else if (opCode == Opcodes.INVOKESTATIC) {
+                for (int i = 0; i < InstrumentationUtilities.countParameters(desc); i++) {
+                    popObject();
+                }
+            } else {
+                clear();
             }
-            clear();
             if (isNonVoidMethod(name, desc)) {
                 if (opCode != Opcodes.INVOKESTATIC) {
                     pushTextualDescription("(" + owner + ")" + thisObject + "." + name + "()");

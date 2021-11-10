@@ -16,10 +16,6 @@
 
 package com.enea.jcarder.agent.instrument;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
-import com.enea.jcarder.testclasses.instrumentation.ReentrantLockSynchronization;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -56,7 +52,11 @@ import com.enea.jcarder.testclasses.instrumentation.SynchronizedStaticMethod;
 import com.enea.jcarder.testclasses.instrumentation.SynchronizedStaticMethodWithException;
 import com.enea.jcarder.testclasses.instrumentation.SynchronizedStaticMethodWithMultipleIntReturns;
 import com.enea.jcarder.testclasses.instrumentation.SynchronizedThis;
+import com.enea.jcarder.testclasses.instrumentation.ReentrantLockSynchronization;
+import com.enea.jcarder.testclasses.instrumentation.ReentrantLockMethodReference;
 import com.enea.jcarder.util.logging.Logger;
+
+import static org.junit.Assert.*;
 
 /*
  * The purpose of this junit class is to test the classes:
@@ -68,6 +68,7 @@ import com.enea.jcarder.util.logging.Logger;
  */
 public final class TestDeadLockInstrumentation implements EventListenerIfc {
     private final ArrayList<MonitorWithContext> mEnteredMonitors;
+    private final ArrayList<MonitorWithContext> mExitedMonitors;
 
     private final TransformClassLoader mClassLoader;
 
@@ -79,6 +80,7 @@ public final class TestDeadLockInstrumentation implements EventListenerIfc {
         mClassLoader = new TransformClassLoader(classTransformer);
         StaticEventListener.setListener(this);
         mEnteredMonitors = new ArrayList<MonitorWithContext>();
+        mExitedMonitors = new ArrayList<MonitorWithContext>();
     }
 
     private SynchronizationTestIfc transformAsSynchronizationTest(Class clazz)
@@ -92,6 +94,15 @@ public final class TestDeadLockInstrumentation implements EventListenerIfc {
         test.go();
         assertEquals(test.getExpectedMonitorEnterings(),
                      mEnteredMonitors.toArray());
+        try
+        {
+            assertEquals(test.getExpectedMonitorExitings(),
+                         mExitedMonitors.toArray());
+        }
+        catch (UnsupportedOperationException ignore)
+        {
+            // TODO implement getExpectedMonitorExitings() in all tests
+        }
     }
 
     public void handleEvent(LockEventType type, Object monitor,
@@ -114,12 +125,25 @@ public final class TestDeadLockInstrumentation implements EventListenerIfc {
                 }
                 mEnteredMonitors.add(new MonitorWithContext(monitor, context));
             }
+        } else if (type == LockEventType.MONITOR_EXIT) {
+            if (monitor != null) {
+                assertTrue(Thread.holdsLock(monitor));
+                mExitedMonitors.add(new MonitorWithContext(monitor, context));
+            }
+        } else if (type == LockEventType.LOCK_UNLOCK) {
+            if (monitor != null) {
+                if (monitor instanceof ReentrantLock) {
+                    assertTrue(((ReentrantLock) monitor).isHeldByCurrentThread());
+                }
+                mExitedMonitors.add(new MonitorWithContext(monitor, context));
+            }
         }
     }
 
     @Before
     public void setUp() throws Exception {
         mEnteredMonitors.clear();
+        mExitedMonitors.clear();
     }
 
     @After
@@ -252,6 +276,11 @@ public final class TestDeadLockInstrumentation implements EventListenerIfc {
         testClass(ReentrantLockSynchronization.class);
     }
 
+    @Test
+    public void testReentrantLockMethodReference() throws Exception {
+        testClass(ReentrantLockMethodReference.class);
+    }    
+    
     @Test
     public void testSynchronizedNewObject() throws Exception {
         SynchronizationTestIfc test =

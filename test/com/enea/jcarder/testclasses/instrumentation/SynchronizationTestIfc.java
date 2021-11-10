@@ -22,4 +22,8 @@ import com.enea.jcarder.agent.instrument.MonitorWithContext;
 public interface SynchronizationTestIfc {
     void go() throws Exception;
     MonitorWithContext[] getExpectedMonitorEnterings();
+    default MonitorWithContext[] getExpectedMonitorExitings()
+    {
+        throw new UnsupportedOperationException();
+    }
 }
