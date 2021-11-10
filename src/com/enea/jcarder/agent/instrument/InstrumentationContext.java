@@ -90,7 +90,7 @@ class InstrumentationContext {
 
     private class LineNumberMethodAdapter extends MethodVisitor {
         public LineNumberMethodAdapter(MethodVisitor mv) {
-            super(Opcodes.ASM5, mv);
+            super(Opcodes.ASM7, mv);
         }
 
         @Override

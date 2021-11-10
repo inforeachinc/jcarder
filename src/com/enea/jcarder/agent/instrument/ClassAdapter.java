@@ -38,7 +38,7 @@ class ClassAdapter extends ClassVisitor {
     private final Logger mLogger;
 
     ClassAdapter(Logger logger, ClassVisitor visitor, String className, int version) {
-        super(Opcodes.ASM5, visitor);
+        super(Opcodes.ASM7, visitor);
         mLogger = logger;
 
         mContext = new InstrumentationContext(className, version);

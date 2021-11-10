@@ -4,7 +4,11 @@
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="src" path="examples"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="3pp/asm-all-5.2.jar"/>
+	<classpathentry kind="lib" path="3pp/asm-7.2.jar"/>
+	<classpathentry kind="lib" path="3pp/asm-commons-7.2.jar"/>
+	<classpathentry kind="lib" path="3pp/asm-util-7.2.jar"/>
+	<classpathentry kind="lib" path="3pp/asm-tree-7.2.jar"/>
+	<classpathentry kind="lib" path="3pp/asm-analysis-7.2.jar"/>
 	<classpathentry kind="lib" path="3pp/jcip-annotations-20070710.jar"/>
 	<classpathentry kind="lib" path="3pp/junit-4.1.jar"/>
 	<classpathentry kind="lib" path="3pp/jarjar-1.4.jar"/>

@@ -52,7 +52,7 @@ class StackAnalyzeMethodVisitor extends MethodVisitor {
     StackAnalyzeMethodVisitor(final Logger logger,
                               final MethodVisitor methodVisitor,
                               final boolean isStatic) {
-        super(Opcodes.ASM5, methodVisitor);
+        super(Opcodes.ASM7, methodVisitor);
         mLogger = logger;
         mIsStatic = isStatic;
     }

@@ -7,7 +7,11 @@
   <property name="build.test" location="build-test/"/>
   <property name="examples" location="examples"/>
   <property name="dist"  location="dist"/>
-  <property name="asm.jar" location="${3pp}/asm-all-5.2.jar"/>
+  <property name="asm.jar" location="${3pp}/asm-7.2.jar"/>
+  <property name="asm.commons.jar" location="${3pp}/asm-commons-7.2.jar"/>
+  <property name="asm.util.jar" location="${3pp}/asm-util-7.2.jar"/>
+  <property name="asm.tree.jar" location="${3pp}/asm-tree-7.2.jar"/>
+  <property name="asm.analysis.jar" location="${3pp}/asm-analysis-7.2.jar"/>
   <property name="mockito.jar" location="${3pp}/mockito-all-1.7.jar"/>
   <property name="jarjar.jar" location="${3pp}/jarjar-1.4.jar"/>
   <property name="jcip.jar" location="${3pp}/jcip-annotations-20070710.jar"/>
@@ -17,6 +21,10 @@
     <condition property="3pps_ok">
       <and>
         <available file="${asm.jar}"/>
+        <available file="${asm.commons.jar}"/>
+        <available file="${asm.util.jar}"/>
+        <available file="${asm.tree.jar}"/>
+        <available file="${asm.analysis.jar}"/>
         <available file="${jarjar.jar}"/>
         <available file="${mockito.jar}"/>
         <available file="${jcip.jar}"/>
@@ -37,6 +45,10 @@
   <path id="run.classpath">
     <pathelement location="${jcip.jar}" />
     <pathelement location="${asm.jar}" />
+    <pathelement location="${asm.commons.jar}" />
+    <pathelement location="${asm.util.jar}" />
+    <pathelement location="${asm.tree.jar}" />
+    <pathelement location="${asm.analysis.jar}" />
   </path>
 
   <path id="test.classpath">
@@ -50,7 +62,7 @@
   <target name="compile" depends="check3pps, init">
     <javac srcdir="${src}"
            destdir="${build}"
-           classpath="${asm.jar}:${jcip.jar}"
+           classpath="${asm.jar}:${asm.commons.jar}:${asm.util.jar}:${asm.tree.jar}:${jcip.jar}"
            source="1.8"
            target="1.8"
            debug="true"
@@ -87,6 +99,10 @@
       <fileset file="${src}/build.properties"/>
       <zipfileset src="${jcip.jar}"/>
       <zipfileset src="${asm.jar}"/>
+      <zipfileset src="${asm.commons.jar}"/>
+      <zipfileset src="${asm.util.jar}"/>
+      <zipfileset src="${asm.tree.jar}"/>
+      <zipfileset src="${asm.analysis.jar}"/>
       <!--rule pattern="org.objectweb.**"
             result="com.enea.jcarder.org.objectweb.@1"/-->
     </jarjar>

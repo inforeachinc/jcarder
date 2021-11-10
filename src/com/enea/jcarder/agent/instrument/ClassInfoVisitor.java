@@ -29,7 +29,7 @@ public class ClassInfoVisitor extends ClassVisitor {
     private ClassInfo.Builder classInfoBuilder = new ClassInfo.Builder();
 
     public ClassInfoVisitor() {
-        super(Opcodes.ASM5);
+        super(Opcodes.ASM7);
     }
 
     @Override

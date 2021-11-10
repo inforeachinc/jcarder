@@ -45,7 +45,7 @@ private static final String TRACING_REENTRANTLOCK_INTERNAL_NAME =
 
   LockClassSubstituterAdapter(final MethodVisitor visitor,
                               final InstrumentationContext context) {
-    super(Opcodes.ASM5, visitor);
+    super(Opcodes.ASM7, visitor);
     mContext = context;
   }
 

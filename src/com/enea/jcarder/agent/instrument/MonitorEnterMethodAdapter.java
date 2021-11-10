@@ -34,7 +34,7 @@ class MonitorEnterMethodAdapter extends MethodVisitor {
 
     MonitorEnterMethodAdapter(final MethodVisitor visitor,
                               final InstrumentationContext context) {
-        super(Opcodes.ASM5, visitor);
+        super(Opcodes.ASM7, visitor);
         mContext = context;
     }
 
