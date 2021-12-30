@@ -20,8 +20,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
+
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -40,6 +40,22 @@ public class ClassTransformer implements ClassFileTransformer {
         "jcarder_original_classes";
     private static final String INSTRUMENTED_CLASSES_DIRNAME =
         "jcarder_instrumented_classes";
+
+    private enum InstrumentableReason {
+        Library("standard library class"), Special("special");
+
+        private final String description;
+
+        InstrumentableReason(String description) {
+            this.description = description;
+        }
+
+        @Override
+        public String toString() {
+            return description;
+        }
+    }
+
     private final Logger mLogger;
     private final ClassLoader mAgentClassLoader;
     private final InstrumentConfig mInstrumentConfig;
@@ -75,8 +91,7 @@ public class ClassTransformer implements ClassFileTransformer {
                             final String jvmInternalClassName,
                             final Class<?> classBeingRedefined,
                             final ProtectionDomain protectionDomain,
-                            final byte[] originalClassBuffer)
-    throws IllegalClassFormatException {
+                            final byte[] originalClassBuffer) {
         String className = jvmInternalClassName.replace('/', '.');
         try {
             return instrument(classLoader, originalClassBuffer, className);
@@ -97,13 +112,13 @@ public class ClassTransformer implements ClassFileTransformer {
             && !className.startsWith("com.enea.jcarder.testclasses")) {
             return null; // Don't instrument ourself.
         }
-        final String reason = isInstrumentable(className);
-        if (reason != null) {
+        final InstrumentableReason reason = isInstrumentable(className);
+        if (reason != null && reason != InstrumentableReason.Special) {
             mLogger.finest(
                 "Won't instrument class " + className + ": " + reason);
             return null;
         }
-        if (!isCompatibleClassLoader(classLoader)) {
+        if (reason != InstrumentableReason.Special && !isCompatibleClassLoader(classLoader)) {
             mLogger.finest("Can't instrument class " + className
                            + " loaded with " + getClassLoaderName(classLoader));
             return null;
@@ -119,10 +134,12 @@ public class ClassTransformer implements ClassFileTransformer {
         final ClassWriter writer = new FrameClassWriter(classLoader, ciCache, version);
 
         ClassVisitor visitor = writer;
-        if (mInstrumentConfig.getValidateTransfomedClasses()) {
+        if (mInstrumentConfig.getValidateTransformedClasses()) {
             visitor = new CheckClassAdapter(visitor, false);
         }
-        visitor = new ClassAdapter(mLogger, visitor, className, version);
+        visitor = reason == InstrumentableReason.Special // className.equals("java.lang.Class")
+                ? new ClassClassAdapter(visitor)
+                : new ClassAdapter(mInstrumentConfig, mLogger, visitor, className, version);
         reader.accept(visitor, ClassReader.EXPAND_FRAMES);
         byte[] instrumentedClassfileBuffer = writer.toByteArray();
         if (mInstrumentConfig.getDumpClassFiles()) {
@@ -136,7 +153,7 @@ public class ClassTransformer implements ClassFileTransformer {
 
     private int extractClassFileMajorVersion(byte[] classByffer)
     {
-        return ((classByffer[6] & 0xff) << 8) | ((classByffer[7] & 0xff) << 0);
+        return ((classByffer[6] & 0xff) << 8) | ((classByffer[7] & 0xff));
     }
 
     /**
@@ -178,7 +195,7 @@ public class ClassTransformer implements ClassFileTransformer {
      * string containing the reason of why the class shouldn't be
      * instrumented.
      */
-    private static String isInstrumentable(String className) {
+    private InstrumentableReason isInstrumentable(String className) {
         // AWK and Swing classes are OK.
         if (className.startsWith("java.awt.")
             || className.startsWith("javax.swing.")) {
@@ -189,7 +206,9 @@ public class ClassTransformer implements ClassFileTransformer {
         if (className.startsWith("java.")
             || className.startsWith("javax.")
             || className.startsWith("sun.")) {
-            return "standard library class";
+            if (mInstrumentConfig.getClassInitLock() && className.equals("java.lang.Class"))
+                return InstrumentableReason.Special;
+            return InstrumentableReason.Library;
         }
 
         // All other classes should be instrumented.
@@ -199,11 +218,11 @@ public class ClassTransformer implements ClassFileTransformer {
     private static boolean deleteDirRecursively(File dir) {
         if (dir.isDirectory()) {
             String[] children = dir.list();
-            for (int i = 0; i < children.length; i++) {
-                boolean success =
-                    deleteDirRecursively(new File(dir, children[i]));
-                if (!success) {
-                    return false;
+            if (children != null) {
+                for (String child : children) {
+                    boolean success = deleteDirRecursively(new File(dir, child));
+                    if (!success)
+                        return false;
                 }
             }
         }

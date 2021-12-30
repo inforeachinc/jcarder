@@ -25,7 +25,10 @@ import java.lang.instrument.Instrumentation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.jar.JarFile;
 
+import com.enea.jcarder.agent.instrument.BootstrapInitializeClassConsumer;
+import com.enea.jcarder.agent.instrument.ClassInitMethodAdapter;
 import com.enea.jcarder.agent.instrument.ClassTransformer;
 import com.enea.jcarder.agent.instrument.InstrumentConfig;
 import com.enea.jcarder.util.BuildInformation;
@@ -40,6 +43,8 @@ import com.enea.jcarder.util.logging.Logger;
  */
 public final class JavaAgent {
     private static final String DUMP_PROPERTY = "jcarder.dump";
+    private static final String CLASS_INIT_LOCK_PROPERTY = "jcarder.classinitlock";
+    private static final String BOOTSTRAP_JAR_PROPERTY = "jcarder.bootstrapjar";
     private static final String LOGLEVEL_PROPERTY = "jcarder.loglevel";
     private static final String LOG_FILENAME = "jcarder.log";
     private static final String OUTPUTDIR_PROPERTY = "jcarder.outputdir";
@@ -48,6 +53,7 @@ public final class JavaAgent {
     private Logger mLogger;
     PrintWriter mLogWriter;
     private File mOutputDir;
+    private JarFile mBootstrapJar;
     private Logger.Level mLogLevel;
 
     private JavaAgent() { }
@@ -72,7 +78,15 @@ public final class JavaAgent {
         EventListener listener = EventListener.create(mLogger, mOutputDir);
         ClassTransformer classTransformer =
             new ClassTransformer(mLogger, mOutputDir, mConfig);
-        instrumentation.addTransformer(classTransformer);
+        instrumentation.addTransformer(classTransformer, mConfig.getClassInitLock());
+
+        if (mConfig.getClassInitLock()) {
+            if (mBootstrapJar != null)
+                instrumentation.appendToBootstrapClassLoaderSearch(mBootstrapJar);
+            BootstrapInitializeClassConsumer.setDelegate(ClassInitMethodAdapter.createLockHandler());
+            instrumentation.retransformClasses(Class.class);
+        }
+
         StaticEventListener.setListener(listener);
         mLogger.info("JCarder agent initialized\n");
     }
@@ -139,10 +153,21 @@ public final class JavaAgent {
         handleDumpProperty();
         handleLogLevelProperty();
         handleOutputDirProperty();
+        handleClassInitLockProperty();
+        handleBootstrapJarProperty();
     }
 
     private void handleDumpProperty() {
         mConfig.setDumpClassFiles(Boolean.getBoolean(DUMP_PROPERTY));
+    }
+
+    private void handleClassInitLockProperty() {
+        mConfig.setClassInitLock(Boolean.getBoolean(CLASS_INIT_LOCK_PROPERTY));
+    }
+
+    private void handleBootstrapJarProperty() throws IOException {
+        String bootstrapJar = System.getProperty(BOOTSTRAP_JAR_PROPERTY);
+        mBootstrapJar = bootstrapJar != null ? new JarFile(bootstrapJar) : null;
     }
 
     private void handleLogLevelProperty() {

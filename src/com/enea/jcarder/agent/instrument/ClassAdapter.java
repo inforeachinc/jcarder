@@ -16,12 +16,9 @@
 
 package com.enea.jcarder.agent.instrument;
 
-import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.*;
 import org.objectweb.asm.commons.TryCatchBlockSorter;
 import net.jcip.annotations.NotThreadSafe;
-
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.MethodVisitor;
 
 import com.enea.jcarder.util.logging.Logger;
 
@@ -35,20 +32,27 @@ import static org.objectweb.asm.Opcodes.*;
 class ClassAdapter extends ClassVisitor {
     private final InstrumentationContext mContext;
 
+    private final InstrumentConfig mInstrumentConfig;
     private final Logger mLogger;
+    private final String mClassName;
 
-    ClassAdapter(Logger logger, ClassVisitor visitor, String className, int version) {
+    private boolean mInterface;
+    private boolean classInitPresent = false;
+
+    ClassAdapter(InstrumentConfig instrumentConfig, Logger logger, ClassVisitor visitor, String className, int version) {
         super(Opcodes.ASM7, visitor);
+        mInstrumentConfig = instrumentConfig;
         mLogger = logger;
+        mClassName = className.replace('.', '/');
 
         mContext = new InstrumentationContext(className, version);
         mLogger.fine("Instrumenting class " + className);
     }
 
     @Override
-    public void visit(int arg0, int arg1, String arg2, String arg3, String arg4,
-                      String[] arg5) {
-        super.visit(arg0, arg1, arg2, arg3, arg4, arg5);
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+        mInterface = (access & Opcodes.ACC_INTERFACE) > 0;
+        super.visit(version, access, name, signature, superName, interfaces);
         super.visitAttribute(new InstrumentedAttribute("DeadLock"));
     }
 
@@ -80,11 +84,17 @@ class ClassAdapter extends ClassVisitor {
             mContext.setMethodName(methodName + ":" + descriptor);
             mContext.setLineNumber(-1);
 
-            final MethodVisitor mv = super.visitMethod(manipulatedArg,
+            MethodVisitor mv = super.visitMethod(manipulatedArg,
                                                        methodName,
                                                        descriptor,
                                                        signature,
                                                        exceptions);
+
+            if (!mInterface && mInstrumentConfig.getClassInitLock() && methodName.equals("<clinit>")) {
+                classInitPresent = true;
+                mv = new ClassInitMethodAdapter(mClassName, mv, mContext, access, methodName, descriptor);
+            }
+
             final MonitorEnterMethodAdapter dlma =
                 new MonitorEnterMethodAdapter(mv, mContext);
             final LockClassSubstituterAdapter lcsa =
@@ -119,5 +129,13 @@ class ClassAdapter extends ClassVisitor {
                 return lineNumberWatcher;
             }
         }
+    }
+
+    @Override
+    public void visitEnd() {
+        if (classInitPresent)
+            super.visitField(ACC_PUBLIC | ACC_STATIC | ACC_FINAL, ClassInitMethodAdapter.CLASS_INIT_LOCK_FIELD, Type.getDescriptor(Object.class), null, null).visitEnd();
+
+        super.visitEnd();
     }
 }

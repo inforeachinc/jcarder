@@ -90,6 +90,14 @@
     </propertyfile>
   </target>
 
+  <target name="dist-bootrstrap" depends="compile, buildproperty">
+    <jar
+          basedir="${build}"
+          jarfile="${dist}/jcarder-bootstrap.jar"
+          includes="com/enea/jcarder/agent/instrument/BootstrapInitializeClassConsumer.class"
+    />
+  </target>
+
   <target name="dist" depends="compile, buildproperty">
     <taskdef name="jarjar"
              classname="com.tonicsystems.jarjar.JarJarTask"
