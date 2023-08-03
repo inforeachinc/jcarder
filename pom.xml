@@ -10,7 +10,7 @@
   <name>jcarder</name>
 
   <properties>
-    <asm.version>7.2</asm.version>
+    <asm.version>9.5</asm.version>
     <mockito.version>1.10.19</mockito.version>
     <jcip.version>1.0</jcip.version>
     <junit.version>4.1</junit.version>

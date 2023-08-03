@@ -53,7 +53,7 @@ class LockClassSubstituterAdapter extends MethodVisitor {
 
   LockClassSubstituterAdapter(final MethodVisitor visitor,
                               final InstrumentationContext context) {
-    super(Opcodes.ASM7, visitor);
+    super(Opcodes.ASM9, visitor);
     mContext = context;
   }
 

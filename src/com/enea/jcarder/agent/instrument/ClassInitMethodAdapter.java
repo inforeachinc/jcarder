@@ -22,7 +22,7 @@ public class ClassInitMethodAdapter extends AdviceAdapter {
 //    private final Label endFinally = new Label();
 
     public ClassInitMethodAdapter(String className, MethodVisitor mv, final InstrumentationContext context, int acc, String name, String desc) {
-        super(Opcodes.ASM7, mv, acc, name, desc);
+        super(Opcodes.ASM9, mv, acc, name, desc);
         mClassName = className;
         mContext = context;
     }
@@ -30,6 +30,8 @@ public class ClassInitMethodAdapter extends AdviceAdapter {
     public static BiConsumer<Class<?>, String> createLockHandler() {
         return (clazz, methodWithClass) -> {
             try {
+                if (clazz == null)
+                    return;
                 Field classInitLockField = clazz.getDeclaredField(CLASS_INIT_LOCK_FIELD);
                 classInitLockField.setAccessible(true);
                 Object classInitLock = classInitLockField.get(null);

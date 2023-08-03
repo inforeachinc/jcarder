@@ -9,7 +9,7 @@ import org.objectweb.asm.commons.AdviceAdapter;
 public class ClassClassAdapter extends ClassVisitor {
 
     public ClassClassAdapter(ClassVisitor visitor) {
-        super(Opcodes.ASM7, visitor);
+        super(Opcodes.ASM9, visitor);
     }
 
     @Override
@@ -32,7 +32,7 @@ public class ClassClassAdapter extends ClassVisitor {
             if(opcode != ATHROW) {
                 visitInsn(DUP);
                 visitLdcInsn("java.lang.Class.forName");
-                visitMethodInsn(INVOKESTATIC, Type.getInternalName(BootstrapInitializeClassConsumer.class), "onClassInitialize", "(Ljava/lang/Class;Ljava/lang/String;)V", true);
+                visitMethodInsn(INVOKESTATIC, Type.getInternalName(BootstrapInitializeClassConsumer.class), "onClassInitialize", "(Ljava/lang/Class;Ljava/lang/String;)V", false);
             }
         }
     }

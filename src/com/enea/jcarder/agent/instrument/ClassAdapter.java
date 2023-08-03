@@ -40,7 +40,7 @@ class ClassAdapter extends ClassVisitor {
     private boolean classInitPresent = false;
 
     ClassAdapter(InstrumentConfig instrumentConfig, Logger logger, ClassVisitor visitor, String className, int version) {
-        super(Opcodes.ASM7, visitor);
+        super(Opcodes.ASM9, visitor);
         mInstrumentConfig = instrumentConfig;
         mLogger = logger;
         mClassName = className.replace('.', '/');

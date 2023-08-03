@@ -35,7 +35,7 @@ class SimulateMethodSyncMethodAdapter extends MethodVisitor {
     SimulateMethodSyncMethodAdapter(final MethodVisitor visitor,
                                     final InstrumentationContext context,
                                     final boolean isStatic) {
-        super(Opcodes.ASM7, visitor);
+        super(Opcodes.ASM9, visitor);
         mContext = context;
         mIsStatic = isStatic;
     }
