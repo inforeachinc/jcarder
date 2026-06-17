@@ -10,8 +10,8 @@
   <name>jcarder</name>
 
   <properties>
-    <asm.version>9.5</asm.version>
-    <mockito.version>1.10.19</mockito.version>
+    <asm.version>9.8</asm.version>
+    <mockito.version>4.11.0</mockito.version>
     <jcip.version>1.0</jcip.version>
     <junit.version>4.1</junit.version>
   </properties>
@@ -38,10 +38,10 @@
       <version>${asm.version}</version>
     </dependency>
 
-    <!-- https://mvnrepository.com/artifact/org.mockito/mockito-all -->
+    <!-- https://mvnrepository.com/artifact/org.mockito/mockito-core -->
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
+      <artifactId>mockito-core</artifactId>
       <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
@@ -156,6 +156,15 @@
             </manifestFile>
             <addMavenDescriptor>false</addMavenDescriptor>
           </archive>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+        <configuration>
+          <argLine>--add-opens java.base/java.util.concurrent.locks=ALL-UNNAMED</argLine>
         </configuration>
       </plugin>
     </plugins>

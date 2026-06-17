@@ -7,12 +7,12 @@
   <property name="build.test" location="build-test/"/>
   <property name="examples" location="examples"/>
   <property name="dist"  location="dist"/>
-  <property name="asm.jar" location="${3pp}/asm-9.5.jar"/>
-  <property name="asm.commons.jar" location="${3pp}/asm-commons-9.5.jar"/>
-  <property name="asm.util.jar" location="${3pp}/asm-util-9.5.jar"/>
-  <property name="asm.tree.jar" location="${3pp}/asm-tree-9.5.jar"/>
-  <property name="asm.analysis.jar" location="${3pp}/asm-analysis-9.5.jar"/>
-  <property name="mockito.jar" location="${3pp}/mockito-all-1.7.jar"/>
+  <property name="asm.jar" location="${3pp}/asm-9.8.jar"/>
+  <property name="asm.commons.jar" location="${3pp}/asm-commons-9.8.jar"/>
+  <property name="asm.util.jar" location="${3pp}/asm-util-9.8.jar"/>
+  <property name="asm.tree.jar" location="${3pp}/asm-tree-9.8.jar"/>
+  <property name="asm.analysis.jar" location="${3pp}/asm-analysis-9.8.jar"/>
+  <property name="mockito.jar" location="${3pp}/mockito-core-4.11.0.jar"/>
   <property name="jarjar.jar" location="${3pp}/jarjar-1.4.jar"/>
   <property name="jcip.jar" location="${3pp}/jcip-annotations-20070710.jar"/>
   <property name="junit.jar" location="${3pp}/junit-4.1.jar"/>
