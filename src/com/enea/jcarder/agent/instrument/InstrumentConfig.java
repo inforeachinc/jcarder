@@ -22,6 +22,7 @@ public final class InstrumentConfig {
     private final boolean mValidateTransformedClasses = true;
     private boolean mDumpClassFiles = true;
     private boolean classInitLock;
+    private boolean haltOnUnsupportedBytecode = true;
 
     public InstrumentConfig() {
         mDumpClassFiles = false;
@@ -45,5 +46,13 @@ public final class InstrumentConfig {
 
     public boolean getClassInitLock() {
         return classInitLock;
+    }
+
+    public void setHaltOnUnsupportedBytecode(boolean haltOnUnsupportedBytecode) {
+        this.haltOnUnsupportedBytecode = haltOnUnsupportedBytecode;
+    }
+
+    public boolean getHaltOnUnsupportedBytecode() {
+        return haltOnUnsupportedBytecode;
     }
 }

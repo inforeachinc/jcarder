@@ -41,6 +41,13 @@ public class ClassTransformer implements ClassFileTransformer {
     private static final String INSTRUMENTED_CLASSES_DIRNAME =
         "jcarder_instrumented_classes";
 
+    // Package-private for testing.
+    static volatile Runnable shutdownAction = new Runnable() {
+        public void run() {
+            System.exit(1);
+        }
+    };
+
     private enum InstrumentableReason {
         Library("standard library class"), Special("special");
 
@@ -101,8 +108,32 @@ public class ClassTransformer implements ClassFileTransformer {
             dumpClassToFile(originalClassBuffer,
                             mOriginalClassesDir,
                             className);
+            String unsupportedBytecodeMessage = findUnsupportedBytecodeMessage(t);
+            if (unsupportedBytecodeMessage != null && mInstrumentConfig.getHaltOnUnsupportedBytecode()) {
+                terminateApplication("JCarder cannot instrument " + className + ": " + unsupportedBytecodeMessage, t);
+            }
             return null;
         }
+    }
+
+    private void terminateApplication(String message, Throwable cause) {
+        System.err.println(message);
+        if (cause != null) {
+            cause.printStackTrace(System.err);
+        }
+        shutdownAction.run();
+    }
+
+    private static String findUnsupportedBytecodeMessage(Throwable t) {
+        for (Throwable c = t; c != null; c = c.getCause()) {
+            if (c instanceof IllegalArgumentException) {
+                String message = c.getMessage();
+                if (message != null && message.contains("Unsupported class file major version")) {
+                    return message;
+                }
+            }
+        }
+        return null;
     }
 
     private byte[] instrument(final ClassLoader classLoader,

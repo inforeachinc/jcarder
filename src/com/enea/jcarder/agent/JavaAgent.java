@@ -48,6 +48,7 @@ public final class JavaAgent {
     private static final String LOGLEVEL_PROPERTY = "jcarder.loglevel";
     private static final String LOG_FILENAME = "jcarder.log";
     private static final String OUTPUTDIR_PROPERTY = "jcarder.outputdir";
+    private static final String HALT_ON_UNSUPPORTED_BYTECODE_PROPERTY = "jcarder.haltonunsupportedbytecode";
 
     private final InstrumentConfig mConfig = new InstrumentConfig();
     private Logger mLogger;
@@ -155,6 +156,7 @@ public final class JavaAgent {
         handleOutputDirProperty();
         handleClassInitLockProperty();
         handleBootstrapJarProperty();
+        handleHaltOnUnsupportedBytecodeProperty();
     }
 
     private void handleDumpProperty() {
@@ -163,6 +165,11 @@ public final class JavaAgent {
 
     private void handleClassInitLockProperty() {
         mConfig.setClassInitLock(Boolean.getBoolean(CLASS_INIT_LOCK_PROPERTY));
+    }
+
+    private void handleHaltOnUnsupportedBytecodeProperty() {
+        mConfig.setHaltOnUnsupportedBytecode(Boolean.parseBoolean(
+            System.getProperty(HALT_ON_UNSUPPORTED_BYTECODE_PROPERTY, "true")));
     }
 
     private void handleBootstrapJarProperty() throws IOException {
